@@ -1,5 +1,4 @@
-const Food = require('../models').Food
-const pry = require('pryjs')
+const Olympian = require('../models').Olympian
 
 const add = async (req, res) => {
   try {

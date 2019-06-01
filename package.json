@@ -7,10 +7,15 @@
   },
   "dependencies": {
     "cookie-parser": "~1.4.4",
+    "csv": "^5.1.1",
     "debug": "~2.6.9",
     "express": "~4.16.1",
+    "fs": "0.0.1-security",
+    "jquery": "^3.4.1",
+    "jquery-csv": "^1.0.3",
     "morgan": "~1.9.1",
     "pg": "^7.11.0",
+    "pryjs": "^1.0.3",
     "sequelize": "^5.8.7",
     "sequelize-cli": "^5.4.0"
   }
