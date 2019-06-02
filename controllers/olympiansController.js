@@ -1,83 +1,75 @@
+const pry = require('pryjs')
 const Olympian = require('../models').Olympian
-
-const add = async (req, res) => {
-  try {
-    let food = sanitizeEntry(req.query.food_name)
-    food = await Food.create({
-      name: food,
-      calories: req.query.calories
-    });
-    const key = process.env.RECIPE_KEY
-
-    const response = await fetch(`https://choosin-foods-recipes.herokuapp.com/api/v1/recipes?ingredient=${food.name}&key=${key}`, {method: 'POST'});
-
-    res.setHeader("Content-Type", "application/json");
-    res.status(201).send(JSON.stringify(food));
-  } catch (error) {
-    res.setHeader("Content-Type", "application/json");
-    res.status(400).send({error});
-  }
-}
+const Sequelize = require('sequelize');
+const Op = Sequelize.Op
 
 const index = async (req, res) => {
-  try {
-    const foods = await Food.findAll();
+  if (req.query.age == "youngest") {
+    var youngest = await fetchYoungest()
     res.setHeader("Content-Type", "application/json");
-    res.status(200).send(JSON.stringify(foods));
-  } catch (error) {
+    res.status(200).send(JSON.stringify(youngest));
+  } else if (req.query.age == "oldest") {
+    var oldest = await fetchOldest()
     res.setHeader("Content-Type", "application/json");
-    res.status(404).send({error});
+    res.status(200).send(JSON.stringify(oldest));
+  } else {
+    var results = await fetchOlympians()
+    res.setHeader("Content-Type", "application/json");
+    res.status(200).send(JSON.stringify({olympians: results}));
   }
 }
 
-const show = async (req, res) => {
-  try {
-    const food = await Food.findOne({
-      where: {
-        name: sanitizeEntry(req.query.food_name)
-      }
-    });
-    res.setHeader("Content-Type", "application/json");
-    res.status(200).send(JSON.stringify(food));
-  } catch (error) {
-    res.setHeader("Content-Type", "application/json");
-    res.status(404).send({error});
+const fetchYoungest = async () => {
+  var results = await Olympian.findAll({
+    order: [['age', 'ASC']]
+  })
+  var youngest = {
+    name: results[0].name,
+    team: results[0].team,
+    age: results[0].age,
+    sport: results[0].sport,
+    total_medals_won: getMedalsWon(results[0].name)
   }
+  return youngest
 }
 
-const update = async (req, res) => {
-  try {
-    let food = await Food.findOne({where: {id: req.params.id}})
-    food.name = req.body.food_name
-    food.calories = req.body.calories
-    food.save({fields: ['name', 'calories']})
-    res.setHeader("Content-Type", "application/json");
-    res.status(200).send(JSON.stringify(food));
-  } catch (error) {
-    res.setHeader("Content-Type", "application/json");
-    res.status(404).send({error});
+const fetchOldest = async () => {
+  var results = await Olympian.findAll({
+    order: [['age', 'DESC']]
+  })
+  var oldest = {
+    name: results[0].name,
+    team: results[0].team,
+    age: results[0].age,
+    sport: results[0].sport,
+    total_medals_won: getMedalsWon(results[0].name)
   }
+  return oldest
 }
 
-const destroy = async (req, res) => {
-  try {
-    let food = await Food.findOne({where: {id: req.params.id}});
-    await food.destroy();
-    res.setHeader("Content-Type", "application/json");
-    res.status(200).send(JSON.stringify({message: `${food.name} has been deleted.`}));
-  } catch (error) {
-    res.setHeader("Content-Type", "application/json");
-    res.status(404).send({error});
-  }
+const fetchOlympians = async () => {
+  var results = await Olympian.findAll()
+  var formatted = []
+  results.map(olympian => {
+    var entry = {
+      name: olympian.name,
+      team: olympian.team,
+      age: olympian.age,
+      sport: olympian.sport,
+      total_medals_won: getMedalsWon(olympian.name)
+    }
+    formatted.push(entry)
+  })
+  return formatted
 }
 
-const sanitizeEntry = (userEntry) => {
-  let entry = userEntry
-  entry = entry.toLowerCase()
-  entry = entry[0].toUpperCase() + entry.substring(1)
-  return entry
+const getMedalsWon = async (olympianName) => {
+  const allResults = await Olympian.findAll({
+    where: {name: olympianName, medal: {[Op.not]: 'NA'}}
+  })
+  return allResults.length || 0
 }
 
 module.exports = {
-  show, add, update, destroy, index
+  index
 }
