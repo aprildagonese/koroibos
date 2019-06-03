@@ -3,6 +3,7 @@ var csv = require('jquery-csv');
 var pry = require('pryjs')
 var sample = 'data/olympians.csv';
 const Olympian = require('../models').Olympian
+const Event = require('../models').Event
 
 const data = async () => {
   try {
@@ -11,15 +12,15 @@ const data = async () => {
 
     await data.map(async record => {
       var olympian = await addOlympian(record)
-      await addEvent(olympian.id)
+      var name = await addEvent(record, olympian[0].dataValues.id)
     })
   } catch(err) {
     console.log(err)
   }
 }
 
-const addOlympian = async (record) => {
-  return await Olympian.findOrCreate({
+const addOlympian = (record) => {
+  return Olympian.findOrCreate({
     where: {
       name: record.Name,
       sex: record.Sex,
@@ -31,15 +32,27 @@ const addOlympian = async (record) => {
       sport: record.Sport,
     }
   })
+  .then(olympian => {
+    return olympian
+  })
+  .error(error => {
+    console.log(error)
+  })
 }
 
-const addEvent = async (olympianId) => {
-  return await Event.findOrCreate({
+const addEvent = (record, olympianId) => {
+  return Event.findOrCreate({
     where: {
-      event: record.Event,
+      name: record.Event,
       medal: record.Medal,
       OlympianId: olympianId
     }
+  })
+  .then(name => {
+    return name
+  })
+  .error(error => {
+    console.log(error)
   })
 }
 
