@@ -1,5 +1,6 @@
 const pry = require('pryjs')
 const Olympian = require('../models').Olympian
+const Event = require('../models').Event
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op
 
@@ -28,7 +29,7 @@ const fetchYoungest = async () => {
     team: results[0].team,
     age: results[0].age,
     sport: results[0].sport,
-    total_medals_won: getMedalsWon(results[0].name)
+    total_medals_won: getMedalsWon(results[0].id)
   }
   return youngest
 }
@@ -42,7 +43,7 @@ const fetchOldest = async () => {
     team: results[0].team,
     age: results[0].age,
     sport: results[0].sport,
-    total_medals_won: getMedalsWon(results[0].name)
+    total_medals_won: getMedalsWon(results[0].id)
   }
   return oldest
 }
@@ -56,18 +57,18 @@ const fetchOlympians = async () => {
       team: olympian.team,
       age: olympian.age,
       sport: olympian.sport,
-      total_medals_won: getMedalsWon(olympian.name)
+      total_medals_won: getMedalsWon(olympian.id)
     }
     formatted.push(entry)
   })
   return formatted
 }
 
-const getMedalsWon = async (olympianName) => {
-  const allResults = await Olympian.findAll({
-    where: {name: olympianName, medal: {[Op.not]: 'NA'}}
+const getMedalsWon = async (olympianId) => {
+  const allResults = await Event.findAndCountAll({
+    where: {OlympianId: olympianId, medal: {[Op.not]: 'NA'}}
   })
-  return allResults.length || 0
+  return await allResults.count
 }
 
 module.exports = {

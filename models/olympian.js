@@ -8,12 +8,10 @@ module.exports = (sequelize, DataTypes) => {
     weight: DataTypes.INTEGER,
     team: DataTypes.STRING,
     games: DataTypes.STRING,
-    sport: DataTypes.STRING,
-    event: DataTypes.STRING,
-    medal: DataTypes.STRING
+    sport: DataTypes.STRING
   }, {});
   Olympian.associate = function(models) {
-    // associations can be defined here
+    Olympian.hasMany(models.Event)
   };
   return Olympian;
 };

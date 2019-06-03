@@ -1,7 +1,7 @@
 'use strict';
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable('Olympians', {
+    return queryInterface.createTable('Events', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -11,26 +11,15 @@ module.exports = {
       name: {
         type: Sequelize.STRING
       },
-      sex: {
+      medal: {
         type: Sequelize.STRING
       },
-      age: {
-        type: Sequelize.INTEGER
-      },
-      height: {
-        type: Sequelize.INTEGER
-      },
-      weight: {
-        type: Sequelize.INTEGER
-      },
-      team: {
-        type: Sequelize.STRING
-      },
-      games: {
-        type: Sequelize.STRING
-      },
-      sport: {
-        type: Sequelize.STRING
+      OlympianId: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: 'Olympians',
+          key: 'id'
+        }
       },
       createdAt: {
         allowNull: false,
@@ -43,6 +32,6 @@ module.exports = {
     });
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable('Olympians');
+    return queryInterface.dropTable('Events');
   }
 };
