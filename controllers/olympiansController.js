@@ -24,13 +24,7 @@ const fetchYoungest = async () => {
   var results = await Olympian.findAll({
     order: [['age', 'ASC']]
   })
-  var youngest = {
-    name: results[0].name,
-    team: results[0].team,
-    age: results[0].age,
-    sport: results[0].sport,
-    total_medals_won: getMedalsWon(results[0].id)
-  }
+  var youngest = createResult(results[0])
   return youngest
 }
 
@@ -38,37 +32,35 @@ const fetchOldest = async () => {
   var results = await Olympian.findAll({
     order: [['age', 'DESC']]
   })
-  var oldest = {
-    name: results[0].name,
-    team: results[0].team,
-    age: results[0].age,
-    sport: results[0].sport,
-    total_medals_won: getMedalsWon(results[0].id)
-  }
+  var oldest = createResult(results[0])
   return oldest
 }
 
 const fetchOlympians = async () => {
   var results = await Olympian.findAll()
-  var formatted = []
-  results.map(olympian => {
-    var entry = {
-      name: olympian.name,
-      team: olympian.team,
-      age: olympian.age,
-      sport: olympian.sport,
-      total_medals_won: getMedalsWon(olympian.id)
-    }
-    formatted.push(entry)
+  var formatted = results.map(olympian => {
+    return createResult(olympian)
   })
-  return formatted
+  return Promise.all(formatted).then(result => {return result})
+}
+
+const createResult = async (olympian) => {
+  var count = await getMedalsWon(olympian.id)
+  var result = await {
+    name: olympian.name,
+    team: olympian.team,
+    age: olympian.age,
+    sport: olympian.sport,
+    total_medals_won: count
+  }
+  return await result
 }
 
 const getMedalsWon = async (olympianId) => {
-  const allResults = await Event.findAndCountAll({
+  const allResults = await Event.findAll({
     where: {OlympianId: olympianId, medal: {[Op.not]: 'NA'}}
   })
-  return await allResults.count
+  return await allResults.length
 }
 
 module.exports = {
