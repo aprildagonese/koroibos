@@ -8,10 +8,11 @@ module.exports = (sequelize, DataTypes) => {
     weight: DataTypes.INTEGER,
     team: DataTypes.STRING,
     games: DataTypes.STRING,
-    sport: DataTypes.STRING
+    SportId: DataTypes.STRING
   }, {});
   Olympian.associate = function(models) {
-    Olympian.hasMany(models.Event)
+    Olympian.hasMany(models.OlympianEvent),
+    Olympian.belongsTo(models.Sport)
   };
   return Olympian;
 };

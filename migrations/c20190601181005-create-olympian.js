@@ -29,8 +29,12 @@ module.exports = {
       games: {
         type: Sequelize.STRING
       },
-      sport: {
-        type: Sequelize.STRING
+      SportId: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: 'Sports',
+          key: 'id'
+        }
       },
       createdAt: {
         allowNull: false,

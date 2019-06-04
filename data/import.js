@@ -3,6 +3,8 @@ var csv = require('jquery-csv');
 var pry = require('pryjs')
 var sample = 'data/olympians.csv';
 const Olympian = require('../models').Olympian
+const OlympianEvent = require('../models').OlympianEvent
+const Sport = require('../models').Sport
 const Event = require('../models').Event
 
 const data = async () => {
@@ -11,15 +13,50 @@ const data = async () => {
     var data = await csv.toObjects(input)
 
     await data.map(async record => {
-      var olympian = await addOlympian(record)
-      var name = await addEvent(record, olympian[0].dataValues.id)
+      var sport = await addSport(record)
+      await console.log("HERE ARE MY SPORTS: ", sport)
+      var eventy = await addEvent(record, sport[0].dataValues.id)
+      await console.log("HERE ARE MY EVENTS: ", eventy)
+      var olympian = await addOlympian(record, sport[0].dataValues.id)
+      await console.log("HERE IS MY OLYMPIAN: ", olympian)
+      var olympianEvent = await addOlympianEvent(record, olympian[0].dataValues.id, eventy[0].dataValues.id)
+      await console.log("HERE IS MY OLY-EVENT: ", olympianEvent)
     })
   } catch(err) {
     console.log(err)
   }
 }
 
-const addOlympian = (record) => {
+const addSport = (record) => {
+  return Sport.findOrCreate({
+    where: {
+      name: record.Sport
+    }
+  })
+  .then(sport => {
+    return sport
+  })
+  .error(error => {
+    console.log(error)
+  })
+}
+
+const addEvent = (record, sportId) => {
+  return Event.findOrCreate({
+    where: {
+      name: record.Event,
+      SportId: sportId
+    }
+  })
+  .then(eventy => {
+    return eventy
+  })
+  .error(error => {
+    console.log(error)
+  })
+}
+
+const addOlympian = (record, sportId) => {
   return Olympian.findOrCreate({
     where: {
       name: record.Name,
@@ -29,7 +66,7 @@ const addOlympian = (record) => {
       weight: record.Weight,
       team: record.Team,
       games: record.Games,
-      sport: record.Sport,
+      SportId: sportId,
     }
   })
   .then(olympian => {
@@ -40,16 +77,16 @@ const addOlympian = (record) => {
   })
 }
 
-const addEvent = (record, olympianId) => {
-  return Event.findOrCreate({
+const addOlympianEvent = (record, olympianId, eventId) => {
+  return OlympianEvent.findOrCreate({
     where: {
-      name: record.Event,
-      medal: record.Medal,
-      OlympianId: olympianId
+      OlympianId: olympianId,
+      EventId: eventId,
+      medal: record.Medal
     }
   })
-  .then(name => {
-    return name
+  .then(olympianEvent => {
+    return olympianEvent
   })
   .error(error => {
     console.log(error)
